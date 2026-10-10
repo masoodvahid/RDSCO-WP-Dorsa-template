@@ -4,8 +4,8 @@
  *
  * How it works:
  * - style.css declares "Update URI: https://github.com/<owner>/<repo>", so WordPress.org never
- *   offers an update for this theme and WordPress asks the "update_themes_github.com" filter instead.
- * - The filter reads the latest GitHub release. A release asset named RDSCo_fresh_template.zip
+ *   offers an update for this theme (no clash with a same-named theme there).
+ * - The theme adds the latest GitHub release to WordPress's update list itself. A release asset named RDSCo_fresh_template.zip
  *   (built by .github/workflows/release.yml) is preferred; the source zipball is the fallback.
  * - Optional: define( 'RDSCO_GITHUB_TOKEN', '...' ) in wp-config.php for a private repository
  *   or to avoid GitHub API rate limits.
@@ -75,29 +75,48 @@ function rdsco_github_headers( string $accept ): array {
 	return $headers;
 }
 
-// Offer the update to WordPress (WP 6.1+).
-add_filter(
-	'update_themes_github.com',
-	function ( $update, array $theme_data, string $stylesheet ) {
-		if ( get_template() !== $stylesheet && wp_get_theme()->get_template() !== $stylesheet ) {
-			return $update;
+/**
+ * Add the GitHub release to WordPress's theme update list when it is newer.
+ *
+ * Hooked to both writing and reading the "update_themes" transient, so the update shows up
+ * even when api.wordpress.org cannot be reached (WordPress stops its own check early then).
+ * Only the write hook may call GitHub; the read hook uses the cached release.
+ */
+function rdsco_inject_update( $value, bool $may_fetch ) {
+	if ( ! is_object( $value ) ) {
+		$value = new stdClass();
+	}
+	$stylesheet = get_template();
+	$theme      = wp_get_theme( $stylesheet );
+	$release    = $may_fetch ? rdsco_github_release() : get_site_transient( RDSCO_GH_TRANSIENT );
+	if ( ! is_array( $release ) || empty( $release['package'] ) ) {
+		return $value;
+	}
+	$item = array(
+		'theme'        => $stylesheet,
+		'new_version'  => $release['version'],
+		'url'          => $release['url'],
+		'package'      => $release['package'],
+		'requires'     => '6.5',
+		'requires_php' => '8.1',
+	);
+	if ( version_compare( $release['version'], (string) $theme->get( 'Version' ), '>' ) ) {
+		$value->response                = isset( $value->response ) ? (array) $value->response : array();
+		$value->response[ $stylesheet ] = $item;
+		if ( isset( $value->no_update[ $stylesheet ] ) ) {
+			unset( $value->no_update[ $stylesheet ] );
 		}
-		$release = rdsco_github_release();
-		if ( ! $release || ! $release['package'] ) {
-			return $update;
+	} else {
+		$value->no_update                = isset( $value->no_update ) ? (array) $value->no_update : array();
+		$value->no_update[ $stylesheet ] = $item;
+		if ( isset( $value->response[ $stylesheet ] ) ) {
+			unset( $value->response[ $stylesheet ] );
 		}
-		return array(
-			'theme'        => $stylesheet,
-			'version'      => $release['version'],
-			'url'          => $release['url'],
-			'package'      => $release['package'],
-			'requires'     => '6.5',
-			'requires_php' => '8.1',
-		);
-	},
-	10,
-	3
-);
+	}
+	return $value;
+}
+add_filter( 'pre_set_site_transient_update_themes', fn( $value ) => rdsco_inject_update( $value, true ) );
+add_filter( 'site_transient_update_themes', fn( $value ) => rdsco_inject_update( $value, false ) );
 
 // "Check again" on Dashboard → Updates also refreshes the GitHub cache.
 add_action(
