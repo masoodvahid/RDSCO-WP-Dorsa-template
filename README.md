@@ -13,16 +13,14 @@ Lightweight WordPress theme for the Dorsa website (Sharif Digital Solutions). No
 
 `style.css` declares `Update URI: https://github.com/masoodvahid/RDSCO-WP-Dorsa-template`. The theme reads the latest GitHub release and offers it in **Dashboard → Updates** (cached 6 hours; "Check again" refreshes it).
 
-To publish an update:
+To publish an update, bump `Version:` in `style.css` and push to `main`:
 
 ```bash
-# 1. bump "Version:" in style.css, e.g. 1.0.1
-git commit -am "Release 1.0.1"
-git tag v1.0.1
-git push origin main --tags
+git commit -am "Release 1.0.1"   # after changing Version: 1.0.1 in style.css
+git push origin main
 ```
 
-The `Release theme` workflow checks that the tag matches `style.css`, lints PHP, builds `RDSCo_fresh_template.zip` and attaches it to the release.
+The `Release theme` workflow runs on every push to `main`. When no release exists yet for the version in `style.css`, it lints PHP, builds `RDSCo_fresh_template.zip` (from `git archive`, so files marked `export-ignore` are left out) and publishes release `v1.0.1`. Pushes that don't change the version publish nothing.
 
 For a private repository or to avoid GitHub API rate limits, add to `wp-config.php`:
 
