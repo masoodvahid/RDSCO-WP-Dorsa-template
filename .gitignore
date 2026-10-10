@@ -1,0 +1,4 @@
+.DS_Store
+/build/
+# One-time seed content (media, PDFs, content.json) ships only in the first install zip.
+/setup/

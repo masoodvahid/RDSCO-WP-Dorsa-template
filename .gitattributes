@@ -1,0 +1,5 @@
+# Keep repository-only files out of GitHub's source zip (used as update fallback).
+/.github export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore
+/README.md export-ignore

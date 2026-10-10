@@ -1,0 +1,8 @@
+/* Block editor adjustments (loaded after main.css inside the editor). */
+.editor-styles-wrapper { font-family: var(--rds-font); color: var(--rds-ink); background: #fff; }
+.editor-styles-wrapper .rds-section { padding-block: 48px; }
+.editor-styles-wrapper .rds-hero > .wp-block-image.rds-hero__media { position: relative; z-index: 0; max-height: 220px; overflow: hidden; }
+.editor-styles-wrapper .rds-hero::before { display: none; }
+.editor-styles-wrapper .rds-cats { margin-block-start: 0; }
+.editor-styles-wrapper .rds-stage__head { position: static; }
+.editor-styles-wrapper .rds-card h3 a::after, .editor-styles-wrapper .rds-cat h3 a::after { display: none; }

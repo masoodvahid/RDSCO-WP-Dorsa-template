@@ -1,0 +1,81 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"settings": {
+		"appearanceTools": false,
+		"color": {
+			"custom": false,
+			"customGradient": false,
+			"customDuotone": false,
+			"defaultPalette": false,
+			"defaultGradients": false,
+			"defaultDuotone": false,
+			"link": false,
+			"palette": [
+				{
+					"slug": "navy",
+					"name": "Navy",
+					"color": "#0b2545"
+				},
+				{
+					"slug": "blue",
+					"name": "Brand blue",
+					"color": "#1d5fa6"
+				},
+				{
+					"slug": "ink",
+					"name": "Ink",
+					"color": "#14202e"
+				},
+				{
+					"slug": "muted",
+					"name": "Muted",
+					"color": "#586577"
+				},
+				{
+					"slug": "surface",
+					"name": "Surface",
+					"color": "#f3f6f9"
+				},
+				{
+					"slug": "white",
+					"name": "White",
+					"color": "#ffffff"
+				}
+			]
+		},
+		"typography": {
+			"customFontSize": false,
+			"defaultFontSizes": false,
+			"dropCap": false,
+			"fontSizes": [],
+			"fontFamilies": [
+				{
+					"slug": "plex",
+					"name": "IBM Plex Sans",
+					"fontFamily": "'IBM Plex Sans', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+				},
+				{
+					"slug": "vazirmatn",
+					"name": "Vazirmatn (RTL)",
+					"fontFamily": "Vazirmatn, Tahoma, Arial, sans-serif"
+				}
+			]
+		},
+		"spacing": {
+			"blockGap": null,
+			"margin": false,
+			"padding": false,
+			"defaultSpacingSizes": false
+		},
+		"shadow": {
+			"defaultPresets": false
+		},
+		"border": {
+			"color": false,
+			"radius": false,
+			"style": false,
+			"width": false
+		}
+	}
+}
