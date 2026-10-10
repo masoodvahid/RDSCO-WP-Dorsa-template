@@ -4,7 +4,7 @@ Lightweight WordPress theme for the Dorsa website (Sharif Digital Solutions). No
 
 - Mega-menu header and mobile drawer built from **Appearance → Menus**
 - Products (`rds_product`) with product families, and Solutions (`rds_solution`) post types
-- Content built with core blocks plus theme block styles and shortcodes (`[rds_products]`, `[rds_solutions]`, `[rds_product_families]`, `[rds_documents]`, `[rds_contact_form]`, `[rds_contact_card]`)
+- Content built with core blocks plus theme block styles and shortcodes (`[rds_products]`, `[rds_solutions]`, `[rds_product_families]`, `[rds_documents]`, `[rds_contact_form]`, `[rds_contact_card]`, `[rds_slab_inspection]`)
 - Contact form with nonce, honeypot and rate limit; messages are stored under **Messages** and emailed
 - Company details, header button and footer call-to-action in **Appearance → Customize → Theme options**
 - Fonts are self-hosted: IBM Plex Sans for English, Vazirmatn for RTL languages (switches automatically on `dir="rtl"`)

@@ -822,3 +822,16 @@ ul.rds-timeline, ol.rds-timeline { list-style: none; padding: 0; }
 .rds-stage .wp-block-shortcode, .rds-stage > p:empty { margin: 0; }
 .rds-stage .rds-cards { align-self: start; }
 .rds-section-head--split .wp-block-buttons { justify-content: flex-end; }
+
+/* Slab inspection animation [rds_slab_inspection] */
+.rds-slab { display: grid; gap: clamp(20px, 3vw, 32px); margin-block-start: clamp(56px, 7vw, 96px); padding-block-start: clamp(40px, 5vw, 64px); border-block-start: 1px solid rgba(255,255,255,.1); }
+.rds-slab__head { display: grid; gap: 12px; max-width: 760px; }
+.rds-slab__head > * { margin: 0; }
+.rds-slab__head h3 { font-size: var(--rds-fs-h2); color: #fff; }
+.rds-slab__head .rds-eyebrow { margin-block-end: 0; }
+.rds-slab__stage { position: relative; width: 100%; }
+.rds-slab__stage canvas { display: block; width: 100%; height: auto; }
+.rds-slab__controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.rds-slab__note { margin: 0; font-size: var(--rds-fs-xs); color: #7f93ad; }
+.rds-slab__btn { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 16px; border-radius: var(--rds-radius); border: 1px solid rgba(255,255,255,.3); background: transparent; color: #fff; font: 600 var(--rds-fs-xs)/1 var(--rds-font); cursor: pointer; }
+.rds-slab__btn:hover { border-color: #fff; }

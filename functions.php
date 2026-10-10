@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'RDSCO_VERSION', '1.0.1' );
+define( 'RDSCO_VERSION', '1.0.2' );
 define( 'RDSCO_DIR', get_template_directory() );
 define( 'RDSCO_URI', get_template_directory_uri() );
 
@@ -21,6 +21,7 @@ require RDSCO_DIR . '/inc/menus.php';
 require RDSCO_DIR . '/inc/shortcodes.php';
 require RDSCO_DIR . '/inc/contact-form.php';
 require RDSCO_DIR . '/inc/updater.php';
+require RDSCO_DIR . '/inc/slab-inspection.php';
 
 // One-time project seeding (only active while the /setup folder exists).
 if ( is_dir( RDSCO_DIR . '/setup' ) ) {

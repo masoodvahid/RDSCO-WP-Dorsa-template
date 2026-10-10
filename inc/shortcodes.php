@@ -8,6 +8,7 @@
  * [rds_documents]                              Datasheets attached to products.
  * [rds_contact_card]                           Company details from the Customizer.
  * [rds_contact_form]                           See inc/contact-form.php.
+ * [rds_slab_inspection]                        See inc/slab-inspection.php.
  *
  * @package RDSCo
  */
