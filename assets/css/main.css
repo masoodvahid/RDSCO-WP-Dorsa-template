@@ -908,7 +908,7 @@ ul.rds-timeline, ol.rds-timeline { list-style: none; padding: 0; }
 .rds-showcase .wp-block-shortcode, .rds-showcase > .rds-container > .rds-slab { margin-block-start: clamp(24px, 4vw, 48px); }
 @media (max-width: 900px) { .rds-showcase__top { grid-template-columns: 1fr; } }
 .rds-slab--hero { margin-block-start: clamp(24px, 4vw, 48px); padding-block-start: 0; border: 0; gap: 16px; }
-.rds-slab--hero .rds-slab__btn { border-radius: 99px; }
+.rds-slab--hero .rds-slab__btn { border-radius: 99px; white-space: nowrap; flex: none; }
 
 /* 2. Proof bar */
 .rds-proof { border-block: 1px solid rgba(255,255,255,.12); padding-block: 36px; }
@@ -1091,3 +1091,32 @@ ul.rds-timeline, ol.rds-timeline { list-style: none; padding: 0; }
 }
 .rds-header { -webkit-backdrop-filter: saturate(1.4) blur(10px); backdrop-filter: saturate(1.4) blur(10px); }
 .rds-header--overlay:not(.is-scrolled, .is-open, :hover, :focus-within) { -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* Showcase hero on desktop: one screen. The animation fills the hero behind the text
+   (slab-inspection.js "stage" mode uses the same media query). */
+@media (min-width: 1000px) and (min-height: 700px) {
+  html:not([dir="rtl"]) .rds-showcase {
+    min-height: calc(100svh - var(--wp-admin--admin-bar--height, 0px));
+    padding-block: calc(var(--rds-header-h) + clamp(20px, 4svh, 48px)) 0;
+  }
+  html:not([dir="rtl"]) .rds-showcase__top {
+    position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start;
+    gap: clamp(14px, 2.6svh, 24px); max-width: min(600px, 52%);
+  }
+  html:not([dir="rtl"]) .rds-showcase__copy { display: contents; }
+  html:not([dir="rtl"]) .rds-showcase__copy > .rds-chip { order: 0; }
+  html:not([dir="rtl"]) .rds-showcase__copy > h1 { order: 1; }
+  html:not([dir="rtl"]) .rds-showcase__aside { order: 2; padding: 0; }
+  html:not([dir="rtl"]) .rds-showcase__copy > .wp-block-buttons { order: 3; }
+  html:not([dir="rtl"]) .rds-showcase h1 { font-size: min(clamp(2.8rem, 1.2rem + 3.6vw, 5.25rem), 10svh); }
+  html:not([dir="rtl"]) .rds-showcase__aside .rds-lead { font-size: 1.125rem; max-width: 46ch; }
+  html:not([dir="rtl"]) .rds-showcase > .rds-container > .rds-slab--hero { position: absolute; inset: 0; z-index: 0; margin: 0; padding: 0; display: block; }
+  html:not([dir="rtl"]) .rds-slab--hero .rds-slab__stage { position: absolute; inset: 0; }
+  html:not([dir="rtl"]) .rds-slab--hero .rds-slab__stage canvas { width: 100%; height: 100%; }
+  html:not([dir="rtl"]) .rds-slab--hero .rds-slab__controls {
+    position: absolute; z-index: 2; bottom: clamp(14px, 2.4svh, 24px);
+    inset-inline-end: max(var(--rds-gutter), (100% - var(--rds-max)) / 2);
+    flex-wrap: nowrap; justify-content: flex-end; gap: 16px; max-width: 760px;
+  }
+  html:not([dir="rtl"]) .rds-slab--hero .rds-slab__note { text-align: end; }
+}

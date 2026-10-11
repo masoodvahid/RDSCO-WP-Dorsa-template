@@ -46,9 +46,86 @@
   function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
+  /*
+   * Stage mode (hero variant on desktop screens): the canvas fills the whole hero behind its text.
+   * The text sits top left, the chart top right, and the track angle and position are solved so the
+   * roller table runs between them; slab history and the controls go bottom right, under the track.
+   */
+  var hero = root.classList.contains('rds-slab--hero') ? root.closest('.rds-showcase') : null;
+  var stageQuery = window.matchMedia('(min-width: 1000px) and (min-height: 700px)');
+  function isStage() { return !!hero && stageQuery.matches && document.documentElement.dir !== 'rtl'; }
+  function relRect(el, base) {
+    var r = el.getBoundingClientRect();
+    return { l: r.left - base.left, t: r.top - base.top, r: r.right - base.left, b: r.bottom - base.top };
+  }
+  function hit(a, b) { return a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t; }
+  function avoided(r) { return (G.avoid || []).some(function (a) { return hit(r, a); }); }
+
+  function layoutStage(W, H) {
+    var base = stage.getBoundingClientRect();
+    var top = hero.querySelector('.rds-showcase__top');
+    var box = top ? relRect(top.parentElement, base) : { l: 24, r: W - 24 };
+    var txt = { l: box.l, t: 120, r: box.l + 1, b: 120 };
+    if (top) {
+      txt.t = Infinity; txt.b = -Infinity; txt.r = -Infinity;
+      top.querySelectorAll(':scope > :not(.rds-showcase__copy), :scope > .rds-showcase__copy > *').forEach(function (el) {
+        var r = relRect(el, base);
+        if (r.b - r.t < 1) return;
+        txt.t = Math.min(txt.t, r.t); txt.b = Math.max(txt.b, r.b); txt.r = Math.max(txt.r, r.r);
+      });
+    }
+    var ctrlEl = root.querySelector('.rds-slab__controls');
+    var ctrl = ctrlEl ? relRect(ctrlEl, base) : { l: W, t: H, r: W, b: H };
+
+    G.W = W; G.H = H; G.wide = true; G.mobile = false; G.stage = true;
+    G.wx = 0.40; G.wy = 0.56; G.h = 112; G.T = 11; G.post = 74;
+    G.L = clamp(W * 0.25, 300, 420); G.gap = G.L * 0.32; G.speed = 95;
+
+    G.panelW = clamp((box.r - box.l) * 0.42, 400, 520);
+    G.panelH = 262;
+    G.panelX = box.r - G.panelW;
+    G.panelTop = txt.t;
+    var panelB = G.panelTop + G.panelH;
+    G.cx = Math.round(clamp((txt.r + G.panelX) / 2 + 60, txt.r + 150, box.r - 220));
+
+    // Largest angle (8°–20°) at which the bed clears the text, the chart and the controls.
+    var pick = null, lo = 0, hi = 0, sl = 0;
+    for (var deg = 20; deg >= 8; deg -= 0.5) {
+      sl = Math.tan(deg * Math.PI / 180);
+      var bTop = 46 + 29 * sl, bBot = 64 + 29 * sl;
+      lo = Math.max(txt.b + 20 + bTop + txt.r * sl, panelB + 28 + bTop + box.r * sl, panelB + 135 + G.cx * sl);
+      hi = Math.min(H - bBot + 0.25 * W * sl, ctrl.t - 16 - bBot + ctrl.l * sl);
+      if (lo <= hi) { pick = deg; break; }
+    }
+    if (pick === null) pick = 8;
+    var th = pick * Math.PI / 180, y0 = (lo + hi) / 2;
+    sl = Math.tan(th);
+    G.dx = Math.cos(th); G.dy = -Math.sin(th);
+    G.cy = Math.round(y0 - G.cx * sl);
+    G.uMin = -(G.cx + 120) / G.dx - G.h;
+    G.uMax = (W - G.cx + 120) / G.dx + G.h;
+
+    // Slab history in the free corner under the track, above the controls.
+    G.histX = box.r - 230;
+    G.histY = Math.round(y0 - G.histX * sl + 64 + 29 * sl + 24);
+    G.histRows = clamp(Math.floor((ctrl.t - 20 - G.histY - 34) / 40), 0, 5);
+    if (G.histRows < 2) G.histRows = 0;
+
+    G.avoid = [txt, { l: G.panelX, t: G.panelTop, r: box.r, b: panelB }, ctrl];
+    if (G.histRows) G.avoid.push({ l: G.histX, t: G.histY, r: box.r, b: G.histY + 34 + G.histRows * 40 });
+
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.height = '';
+  }
+
   /* ---------------- geometry ---------------- */
   function layout() {
     var W = stage.clientWidth;
+    root.classList.toggle('is-stage', isStage());
+    if (isStage()) { layoutStage(W, stage.clientHeight); return; }
+    G.stage = false; G.avoid = []; G.histRows = 5;
     var wide = W >= 900;
     var th = (wide ? 20 : 21) * Math.PI / 180;
     G.W = W; G.wide = wide; G.mobile = W < 560;
@@ -295,6 +372,7 @@
   function drawLabels() {
     screenSpace();
     // Only the slab on the chart gets labels; finished slabs keep their frames.
+    var placed = [];
     [current].forEach(function (s) {
       if (!s || slabs.indexOf(s) < 0) return;
       s.defects.forEach(function (d) {
@@ -306,6 +384,11 @@
         ctx.font = '600 11px ' + C.font;
         var tw = ctx.measureText(str).width + 12;
         var lx = clamp(anchor.x - tw / 2, 4, G.W - tw - 4), ly = anchor.y - 30;
+        // Stack labels that would overlap an earlier one.
+        for (var k = 0; k < 3 && placed.some(function (q) { return hit(q, { l: lx, t: ly, r: lx + tw, b: ly + 18 }); }); k++) ly -= 22;
+        var box = { l: lx, t: ly, r: lx + tw, b: ly + 18 };
+        if (avoided(box) || placed.some(function (q) { return hit(q, box); })) return;
+        placed.push({ l: box.l - 4, t: box.t - 2, r: box.r + 4, b: box.b + 2 });
         // Labels appear once the defect has cleared the gantry.
         var alpha = clamp((f.cu - 55) / 35, 0, 1);
         if (!alpha) return;
@@ -380,7 +463,8 @@
     var tag = L.inspecting;
     ctx.font = '600 10px ' + C.font;
     var tw = ctx.measureText(tag).width + 26, tx = mid.x - hw / 2 - 12 - tw, ty = mid.y - 9;
-    if (tx < 4) tx = mid.x + hw / 2 + 10;
+    if (tx < 4 || avoided({ l: tx, t: ty, r: tx + tw, b: ty + 18 })) tx = mid.x + hw / 2 + 10;
+    G.headTop = { x: mid.x, y: mid.y - hh / 2 - 2 };
     ctx.fillStyle = 'rgba(7,26,51,.9)'; rr(tx, ty, tw, 18, 9); ctx.fill();
     ctx.fillStyle = C.ok; ctx.beginPath(); ctx.arc(tx + 10, ty + 9, 3.2, 0, Math.PI * 2); ctx.fill();
     ctx.globalAlpha = 0.35 + 0.35 * Math.sin(t * 4); ctx.beginPath(); ctx.arc(tx + 10, ty + 9, 6.5, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
@@ -404,18 +488,27 @@
 
   function drawLink() {
     screenSpace();
-    var a = G.nearBase, b = G.wide ? { x: G.panelX + 28, y: G.panelTop } : { x: G.cx, y: G.panelTop };
-    var start = { x: a.x, y: a.y + 6 };
+    var a, b, start, dir;
+    if (G.stage) {
+      // Chart above the track: from the camera head up to the bottom of the chart.
+      start = G.headTop; dir = -1;
+      b = { x: clamp(start.x, G.panelX + 28, G.panelX + G.panelW - 28), y: G.panelTop + G.panelH };
+    } else {
+      a = G.nearBase; dir = 1;
+      b = G.wide ? { x: G.panelX + 28, y: G.panelTop } : { x: G.cx, y: G.panelTop };
+      start = { x: a.x, y: a.y + 6 };
+    }
+    var turn = b.y - 14 * dir;
     ctx.strokeStyle = 'rgba(159,195,236,.3)'; ctx.setLineDash([3, 5]); ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(start.x, b.y - 14); ctx.lineTo(b.x, b.y - 14); ctx.lineTo(b.x, b.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(start.x, turn); ctx.lineTo(b.x, turn); ctx.lineTo(b.x, b.y); ctx.stroke();
     ctx.setLineDash([]);
     if (!current || current.done) return;
-    var seg1 = b.y - 14 - start.y, seg2 = Math.abs(b.x - start.x), seg3 = 14, total = seg1 + seg2 + seg3;
+    var seg1 = Math.abs(turn - start.y), seg2 = Math.abs(b.x - start.x), seg3 = 14, total = seg1 + seg2 + seg3;
     for (var i = 0; i < 3; i++) {
       var d = ((t * 0.7 + i / 3) % 1) * total, x, y;
-      if (d < seg1) { x = start.x; y = start.y + d; }
-      else if (d < seg1 + seg2) { x = start.x + Math.sign(b.x - start.x) * (d - seg1); y = b.y - 14; }
-      else { x = b.x; y = b.y - 14 + (d - seg1 - seg2); }
+      if (d < seg1) { x = start.x; y = start.y + dir * d; }
+      else if (d < seg1 + seg2) { x = start.x + Math.sign(b.x - start.x) * (d - seg1); y = turn; }
+      else { x = b.x; y = turn + dir * (d - seg1 - seg2); }
       ctx.fillStyle = 'rgba(159,215,255,.9)'; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI * 2); ctx.fill();
     }
   }
@@ -487,11 +580,11 @@
   }
 
   function drawHistory() {
-    if (!G.wide) return;
+    if (!G.wide || !G.histRows) return;
     screenSpace();
     var X = G.histX, Y = G.histY, W = 230;
     text(L.last, X, Y + 14, 11, 600, C.sky, 'left', 1.3);
-    history.slice(0, 5).forEach(function (s, i) {
+    history.slice(0, G.histRows).forEach(function (s, i) {
       var y = Y + 34 + i * 40;
       ctx.globalAlpha = 1 - i * 0.14;
       text(s.id, X, y + 12, 12, 600, '#fff');
@@ -544,15 +637,17 @@
   }
   document.addEventListener('visibilitychange', function () { visible = !document.hidden; start(); });
 
-  var rw = 0;
+  var rw = 0, rh = 0;
   window.addEventListener('resize', function () {
-    if (stage.clientWidth === rw) return;
-    rw = stage.clientWidth;
+    var stageNow = isStage();
+    if (stage.clientWidth === rw && (!stageNow || stage.clientHeight === rh) && stageNow === !!G.stage) return;
+    rw = stage.clientWidth; rh = stage.clientHeight;
     reset();
   });
 
   var ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-  ready.then(function () { rw = stage.clientWidth; reset(); start(); }, function () { rw = stage.clientWidth; reset(); start(); });
+  function boot() { rw = stage.clientWidth; rh = stage.clientHeight; reset(); start(); }
+  ready.then(boot, boot);
   }
 
   document.querySelectorAll('[data-rds-slab]').forEach(init);
