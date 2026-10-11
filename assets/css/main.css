@@ -1197,3 +1197,16 @@ ul.rds-timeline, ol.rds-timeline { list-style: none; padding: 0; }
   .rds-search { border: 0; padding-block: 4px 16px; }
   .rds-mega { inset-inline: -16px; }
 }
+
+/* Mobile drawer opens over the page instead of pushing it down (v1.2.4). */
+@media (max-width: 1100px) {
+  .rds-drawer {
+    position: absolute; top: 100%; inset-inline: 0;
+    height: calc(100dvh - var(--rds-header-h)); max-height: none;
+    background: rgba(255,255,255,.86);
+    -webkit-backdrop-filter: saturate(1.8) blur(20px); backdrop-filter: saturate(1.8) blur(20px);
+    box-shadow: 0 24px 48px rgba(11,37,69,.14);
+  }
+  .admin-bar .rds-drawer { height: calc(100dvh - var(--rds-header-h) - var(--wp-admin--admin-bar--height, 0px)); }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .rds-drawer { background: #fff; } }
+}

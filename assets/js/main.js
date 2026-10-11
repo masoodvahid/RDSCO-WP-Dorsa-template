@@ -44,7 +44,9 @@
     burger.setAttribute('aria-label', burger.getAttribute(open ? 'data-label-close' : 'data-label-open'));
     var use = burger.querySelector('use');
     if (use) use.setAttribute('href', open ? '#i-close' : '#i-menu');
-    document.documentElement.style.overflow = open ? 'hidden' : '';
+    // Lock page scroll on <body>: it propagates to the viewport, so the sticky header stays put.
+    // (overflow on <html> would turn <body> into its own scroller and unstick the header.)
+    document.body.style.overflow = open ? 'hidden' : '';
     syncOpen();
   }
   if (burger) burger.addEventListener('click', function () { toggleDrawer(); });
