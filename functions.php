@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'RDSCO_VERSION', '1.2.1' );
+define( 'RDSCO_VERSION', '1.2.2' );
 define( 'RDSCO_DIR', get_template_directory() );
 define( 'RDSCO_URI', get_template_directory_uri() );
 

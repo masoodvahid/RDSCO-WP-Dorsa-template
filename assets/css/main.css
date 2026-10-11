@@ -1179,3 +1179,21 @@ ul.rds-timeline, ol.rds-timeline { list-style: none; padding: 0; }
   .rds-header::before { background: rgba(255,255,255,.98); }
   .rds-mega, .rds-drop { background: #fff; }
 }
+
+/* Desktop: the bar is limited to the content width, with rounded ends (v1.2.2). */
+@media (min-width: 1101px) {
+  .rds-header { border-block-end: 0; }
+  .rds-header.is-scrolled { box-shadow: none; }
+  .rds-header__inner { padding-block-start: 6px; }
+  .rds-header::before {
+    inset-block: 8px 2px;
+    inset-inline: calc(max(var(--rds-gutter), (100% - var(--rds-max)) / 2) - 16px);
+    border-radius: 20px;
+    box-shadow: inset 0 0 0 1px rgba(11,37,69,.08), 0 1px 2px rgba(11,37,69,.04);
+    transition: background-color .3s, box-shadow .3s;
+  }
+  .rds-header.is-scrolled::before { box-shadow: inset 0 0 0 1px rgba(255,255,255,.6), 0 10px 30px rgba(11,37,69,.12); }
+  .rds-header--overlay:not(.is-scrolled, .is-open, :hover, :focus-within)::before { box-shadow: none; }
+  .rds-search { border: 0; padding-block: 4px 16px; }
+  .rds-mega { inset-inline: -16px; }
+}
