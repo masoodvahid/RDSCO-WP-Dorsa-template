@@ -121,10 +121,10 @@ function rdsco_render_primary_nav(): void {
 		} else {
 			echo '<div class="rds-drop" id="' . esc_attr( $panel_id ) . '">';
 			if ( rdsco_item_is_link( $item ) ) {
-				echo '<a class="rds-drop__parent"' . rdsco_link_attrs( $item ) . '>' . $title . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput
+				echo '<a class="rds-drop__parent"' . rdsco_link_attrs( $item ) . '>' . $title . rdsco_icon( 'arrow' ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput
 			}
 			foreach ( $item->kids as $kid ) {
-				echo '<a' . rdsco_link_attrs( $kid ) . '>' . esc_html( $kid->title ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput
+				echo '<a' . rdsco_link_attrs( $kid ) . '>' . esc_html( $kid->title ) . ( $kid->description ? '<small>' . esc_html( $kid->description ) . '</small>' : '' ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput
 			}
 			echo '</div>';
 		}
@@ -184,6 +184,15 @@ function rdsco_render_mega( WP_Post $item, string $panel_id ): void {
 		}
 		echo '</div>';
 	}
+	echo '</div>';
+
+	// Footer strip: a nudge to talk to an engineer, and the parent's overview page.
+	$intro = $item->description ? $item->description : __( 'Not sure which system fits your line?', 'rdsco' );
+	echo '<div class="rds-mega__foot"><span>' . esc_html( $intro ) . ' <a href="' . esc_url( rdsco_contact_url() ) . '">' . esc_html__( 'Talk to an engineer', 'rdsco' ) . '</a></span>';
+	if ( rdsco_item_is_link( $item ) ) {
+		/* translators: %s: menu item, e.g. Products. */
+		echo '<a class="rds-link-arrow"' . rdsco_link_attrs( $item ) . '>' . esc_html( sprintf( __( 'All %s', 'rdsco' ), $item->title ) ) . ' ' . rdsco_icon( 'arrow' ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput
+	}
 	echo '</div></div>';
 }
 
@@ -196,9 +205,9 @@ function rdsco_render_drawer_nav(): void {
 			echo '<a class="rds-drawer__link"' . rdsco_link_attrs( $item ) . '>' . esc_html( $item->title ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput
 			continue;
 		}
-		echo '<details><summary>' . esc_html( $item->title ) . ' ' . rdsco_icon( 'chev' ) . '</summary><ul>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo '<details name="rds-drawer-nav"><summary>' . esc_html( $item->title ) . ' ' . rdsco_icon( 'chev' ) . '</summary><ul>'; // phpcs:ignore WordPress.Security.EscapeOutput
 		if ( rdsco_item_is_link( $item ) ) {
-			echo '<li><a' . rdsco_link_attrs( $item ) . '>' . esc_html( sprintf( /* translators: %s: menu item */ __( 'All %s', 'rdsco' ), $item->title ) ) . '</a></li>'; // phpcs:ignore WordPress.Security.EscapeOutput
+			echo '<li class="rds-drawer__all"><a' . rdsco_link_attrs( $item ) . '>' . esc_html( sprintf( /* translators: %s: menu item */ __( 'All %s', 'rdsco' ), $item->title ) ) . '</a></li>'; // phpcs:ignore WordPress.Security.EscapeOutput
 		}
 		foreach ( $item->kids as $kid ) {
 			if ( rdsco_item_has_class( $kid, 'mega-feature' ) ) {
@@ -208,7 +217,7 @@ function rdsco_render_drawer_nav(): void {
 				echo '<li class="rds-drawer__group">' . esc_html( $kid->title ) . '</li>';
 				foreach ( $kid->kids as $link ) {
 					$note = rdsco_item_note( $link );
-					echo '<li><a' . rdsco_link_attrs( $link ) . '>' . esc_html( $link->title ) . ( $note ? ' · ' . esc_html( $note ) : '' ) . '</a></li>'; // phpcs:ignore WordPress.Security.EscapeOutput
+					echo '<li><a' . rdsco_link_attrs( $link ) . '>' . esc_html( $link->title ) . ( $note ? '<small>' . esc_html( $note ) . '</small>' : '' ) . '</a></li>'; // phpcs:ignore WordPress.Security.EscapeOutput
 				}
 			} else {
 				echo '<li><a' . rdsco_link_attrs( $kid ) . '>' . esc_html( $kid->title ) . '</a></li>'; // phpcs:ignore WordPress.Security.EscapeOutput
