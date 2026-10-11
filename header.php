@@ -20,7 +20,7 @@ $rdsco_cta_label = rdsco_mod( 'header_cta_label' );
 <?php wp_body_open(); ?>
 <a class="rds-skip" href="#main"><?php esc_html_e( 'Skip to content', 'rdsco' ); ?></a>
 
-<header class="rds-header">
+<header class="rds-header<?php echo rdsco_is_showcase_home() ? ' rds-header--overlay' : ''; ?>">
 	<div class="rds-container rds-header__inner">
 		<a class="rds-brand" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
 			<?php

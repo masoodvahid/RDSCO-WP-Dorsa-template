@@ -12,6 +12,10 @@ $rdsco_show_cta = (bool) get_theme_mod( 'rdsco_cta_show', '1' ) && rdsco_mod( 'c
 if ( is_singular() && has_shortcode( (string) get_post_field( 'post_content', get_queried_object_id() ), 'rds_contact_form' ) ) {
 	$rdsco_show_cta = false;
 }
+// Pages that close with their own large call-to-action block (.rds-bigcta) skip the band.
+if ( is_singular() && str_contains( (string) get_post_field( 'post_content', get_queried_object_id() ), 'rds-bigcta' ) ) {
+	$rdsco_show_cta = false;
+}
 $rdsco_logo_id = (int) get_theme_mod( 'custom_logo' );
 $rdsco_phone   = rdsco_mod( 'phone' );
 $rdsco_email   = rdsco_mod( 'email' );

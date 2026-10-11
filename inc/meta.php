@@ -41,7 +41,7 @@ add_action(
 				);
 			}
 		}
-		foreach ( array( 'rds_image' => 'integer', 'rds_order' => 'integer' ) as $key => $type ) {
+		foreach ( array( 'rds_image' => 'integer', 'rds_order' => 'integer', 'rds_tagline' => 'string' ) as $key => $type ) {
 			register_term_meta(
 				'rds_product_cat',
 				$key,
@@ -49,7 +49,7 @@ add_action(
 					'type'              => $type,
 					'single'            => true,
 					'show_in_rest'      => true,
-					'sanitize_callback' => 'absint',
+					'sanitize_callback' => 'integer' === $type ? 'absint' : 'sanitize_text_field',
 					'auth_callback'     => fn() => current_user_can( 'manage_categories' ),
 				)
 			);
@@ -115,15 +115,17 @@ add_action(
 		wp_nonce_field( 'rdsco_term', 'rdsco_term_nonce' );
 		$fields = array(
 			'rds_image' => array( __( 'Image (attachment ID)', 'rdsco' ), __( 'Media Library ID used on the product family tile. Leave empty to use the first product image.', 'rdsco' ) ),
-			'rds_order' => array( __( 'Order', 'rdsco' ), __( 'Lower numbers show first.', 'rdsco' ) ),
+			'rds_order'   => array( __( 'Order', 'rdsco' ), __( 'Lower numbers show first.', 'rdsco' ) ),
+			'rds_tagline' => array( __( 'Tagline', 'rdsco' ), __( 'Short headline on the home page product tiles, e.g. "Pellet size, closed loop". The family name is shown above it.', 'rdsco' ) ),
 		);
 		foreach ( $fields as $key => $def ) {
 			printf(
-				'<tr class="form-field"><th scope="row"><label for="%1$s">%2$s</label></th><td><input type="number" id="%1$s" name="%1$s" value="%3$s"><p class="description">%4$s</p></td></tr>',
+				'<tr class="form-field"><th scope="row"><label for="%1$s">%2$s</label></th><td><input type="%5$s" id="%1$s" name="%1$s" value="%3$s"><p class="description">%4$s</p></td></tr>',
 				esc_attr( $key ),
 				esc_html( $def[0] ),
 				esc_attr( (string) get_term_meta( $term->term_id, $key, true ) ),
-				esc_html( $def[1] )
+				esc_html( $def[1] ),
+				'rds_tagline' === $key ? 'text' : 'number'
 			);
 		}
 	}
@@ -139,6 +141,9 @@ add_action(
 			if ( isset( $_POST[ $key ] ) ) {
 				update_term_meta( $term_id, $key, absint( wp_unslash( $_POST[ $key ] ) ) );
 			}
+		}
+		if ( isset( $_POST['rds_tagline'] ) ) {
+			update_term_meta( $term_id, 'rds_tagline', sanitize_text_field( wp_unslash( $_POST['rds_tagline'] ) ) );
 		}
 	}
 );

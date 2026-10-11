@@ -115,6 +115,43 @@ function rdsco_contact_url(): string {
 }
 
 /**
+ * True on a front page whose content opens with the dark showcase hero (.rds-showcase).
+ * The header then sits transparent over the hero; any other front page keeps the solid header.
+ */
+function rdsco_is_showcase_home(): bool {
+	static $result = null;
+	if ( null === $result ) {
+		$id     = is_front_page() && 'page' === get_option( 'show_on_front' ) ? (int) get_option( 'page_on_front' ) : 0;
+		$result = $id && str_contains( (string) get_post_field( 'post_content', $id ), 'rds-showcase' );
+	}
+	return $result;
+}
+
+/**
+ * Products that a post lists with [rds_products slugs="…"], in order of appearance.
+ *
+ * @return WP_Post[]
+ */
+function rdsco_listed_products( WP_Post $post ): array {
+	if ( ! preg_match_all( '/\[rds_products\b[^\]]*\bslugs="([^"]+)"/', $post->post_content, $m ) ) {
+		return array();
+	}
+	$slugs = array_values( array_unique( array_filter( array_map( 'sanitize_title', explode( ',', implode( ',', $m[1] ) ) ) ) ) );
+	if ( ! $slugs ) {
+		return array();
+	}
+	return get_posts(
+		array(
+			'post_type'      => 'rds_product',
+			'post_name__in'  => $slugs,
+			'orderby'        => 'post_name__in',
+			'posts_per_page' => count( $slugs ),
+			'no_found_rows'  => true,
+		)
+	);
+}
+
+/**
  * Product card markup used by shortcodes and related products.
  */
 function rdsco_product_card( WP_Post $product ): string {

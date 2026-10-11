@@ -5,6 +5,7 @@
  * Attributes (all optional):
  *   eyebrow, title, text   Small heading block above the animation.
  *   note                   Caption under the animation.
+ *   variant                "hero" drops the top rule and spacing, for use inside the showcase hero.
  *
  * The script loads only on pages that use the shortcode. Canvas labels are passed
  * through __() so a translation plugin can translate them.
@@ -40,6 +41,7 @@ add_shortcode(
 				'title'   => '',
 				'text'    => '',
 				'note'    => __( 'Illustrative simulation. Slab IDs, defects and values are generated for demonstration.', 'rdsco' ),
+				'variant' => '',
 			),
 			$atts,
 			'rds_slab_inspection'
@@ -74,7 +76,7 @@ add_shortcode(
 		$heading_id = wp_unique_id( 'rds-slab-' );
 		ob_start();
 		?>
-		<div class="rds-slab" data-rds-slab data-i18n="<?php echo esc_attr( wp_json_encode( $i18n ) ); ?>">
+		<div class="rds-slab<?php echo $atts['variant'] ? ' rds-slab--' . esc_attr( sanitize_html_class( $atts['variant'] ) ) : ''; ?>" data-rds-slab data-i18n="<?php echo esc_attr( wp_json_encode( $i18n ) ); ?>">
 			<?php if ( $atts['eyebrow'] || $atts['title'] || $atts['text'] ) : ?>
 				<div class="rds-slab__head">
 					<?php if ( $atts['eyebrow'] ) : ?>

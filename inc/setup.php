@@ -113,6 +113,9 @@ add_filter(
 		if ( is_page_template( 'templates/template-sections.php' ) || is_front_page() || is_singular( array( 'rds_product', 'rds_solution' ) ) ) {
 			$classes[] = 'rds-has-sections';
 		}
+		if ( rdsco_is_showcase_home() ) {
+			$classes[] = 'rds-showcase-home';
+		}
 		return $classes;
 	}
 );
