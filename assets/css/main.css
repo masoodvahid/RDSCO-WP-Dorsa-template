@@ -1109,8 +1109,6 @@ ul.rds-timeline, ol.rds-timeline { list-style: none; padding: 0; }
   .admin-bar .rds-header { top: var(--wp-admin--admin-bar--height, 32px); }
   .admin-bar .rds-subnav { top: calc(var(--wp-admin--admin-bar--height, 32px) + var(--rds-header-h)); }
 }
-.rds-header { -webkit-backdrop-filter: saturate(1.4) blur(10px); backdrop-filter: saturate(1.4) blur(10px); }
-.rds-header--overlay:not(.is-scrolled, .is-open, :hover, :focus-within) { -webkit-backdrop-filter: none; backdrop-filter: none; }
 
 /* Showcase hero on desktop: one screen. The animation fills the hero behind the text
    (slab-inspection.js "stage" mode uses the same media query). */
@@ -1139,4 +1137,45 @@ ul.rds-timeline, ol.rds-timeline { list-style: none; padding: 0; }
     flex-wrap: nowrap; justify-content: flex-end; gap: 16px; max-width: 760px;
   }
   html:not([dir="rtl"]) .rds-slab--hero .rds-slab__note { text-align: end; }
+}
+
+/* ==========================================================================
+   Glass header and menus (v1.2.1)
+   The frosted layer sits on .rds-header::before, not on the header itself: an element with
+   backdrop-filter becomes the backdrop root of its children, which would stop the drop-down
+   panels from blurring the page behind them.
+   ========================================================================== */
+.rds-header { background: transparent; border-block-end-color: rgba(11,37,69,.08); }
+.rds-header::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: rgba(255,255,255,.75);
+  -webkit-backdrop-filter: saturate(1.8) blur(18px); backdrop-filter: saturate(1.8) blur(18px);
+  transition: background-color .3s;
+}
+.rds-header--overlay:not(.is-scrolled, .is-open, :hover, :focus-within)::before { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+.rds-mega, .rds-drop {
+  background: rgba(255,255,255,.78);
+  -webkit-backdrop-filter: saturate(1.8) blur(24px); backdrop-filter: saturate(1.8) blur(24px);
+  border-color: rgba(255,255,255,.65);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 2px 6px rgba(11,37,69,.05), 0 28px 64px rgba(11,37,69,.22);
+}
+.rds-mega__foot { background: rgba(255,255,255,.38); border-block-start-color: rgba(11,37,69,.08); }
+:is(.rds-mega__list, .rds-mega__steps, .rds-mega__industries) a:hover, .rds-drop a:hover { background: rgba(255,255,255,.7); }
+.rds-mega__steps a::before { background: rgba(255,255,255,.75); }
+.rds-drop .rds-drop__parent { background: rgba(255,255,255,.6); }
+.rds-drop .rds-drop__parent:hover { background: rgba(255,255,255,.9); }
+
+/* Search bar and mobile drawer take the header's glass. */
+.rds-search, .rds-drawer { background: transparent; border-block-start-color: rgba(11,37,69,.08); }
+.rds-search input { background: rgba(255,255,255,.7); }
+.rds-drawer details[open] { background: rgba(11,37,69,.04); }
+.rds-drawer details li a { background: rgba(255,255,255,.75); box-shadow: inset 0 0 0 1px rgba(11,37,69,.06); }
+.rds-drawer summary svg { background: rgba(255,255,255,.7); }
+.rds-header.is-open::before { background: rgba(255,255,255,.8); }
+
+/* No backdrop-filter support: solid surfaces. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .rds-header::before { background: rgba(255,255,255,.98); }
+  .rds-mega, .rds-drop { background: #fff; }
 }
